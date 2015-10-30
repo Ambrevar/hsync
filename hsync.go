@@ -164,7 +164,7 @@ import (
 
 const (
 	APPLICATION = "hsync"
-	VERSION     = "1.0"
+	VERSION     = "1.1"
 	COPYRIGHT   = "Copyright (C) 2015 Pierre Neidhardt"
 	BLOCKSIZE   = 4096
 	SEPARATOR   = string(os.PathSeparator)
