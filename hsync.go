@@ -23,8 +23,6 @@ For usage options, see:
 
 Implementation details
 
-TODO: review this doc.
-
 We store the file entries in the following structure:
 
 	entries := map[partialHash struct{size int64, pos int64, hash string}]fileMatch struct{
