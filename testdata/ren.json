@@ -1,0 +1,12 @@
+{
+	"sub1/file": "sub2/file",
+	"nonexisting": "dummy",
+	"noclobber": "existing",
+	"chain1": "chain2",
+	"chain2": "chain3",
+	"chain3": "chain4",
+	"cycle1": "cycle2",
+	"cycle2": "cycle3",
+	"cycle3": "cycle1",
+	"identical": "identical"
+}

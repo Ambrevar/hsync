@@ -1,0 +1,22 @@
+* Add support for multiple targets.
+TARGETS can be analyzed in parallel but beware of race conditions when a
+conflict arises. Example: t1 in TARGET matches s1 in SOURCE and is stored in the
+structure. t2 in TARGET matches s1 too. There is a conflict. We need to update
+s1, t1 and t2 at the same time until t1 != t2 or end of file is reached.
+
+* If duplicate count is the same on both sides, we could still process. We
+should minimize the number of renames.
+
+* Multi-threading: The main structure should be mutexed, but the checksums can
+be parallelized.
+
+* Save on resident memory usage. Currently 200000 files in /usr will require
+~100 MB. Shall we use a trie to store paths? Not sure it would save memory.
+
+* Possible optimization: we can skip target (sub)folders where
+os.SameFile(sourceFolder, targetFolder) == true. Then we need to store source's
+FileInfo in a map.
+
+* This program could be split in two: the analyzer and the renamer.
+
+* References: dupd, dupfinder, fdupes, gotsync, rmlint, rsync.
