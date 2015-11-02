@@ -512,18 +512,32 @@ func processRenames(root string, renameOps, reverseOps map[string]string, clobbe
 			newpath = renameOps[newpath]
 		}
 
-		// Break the cycle if any.
-		tmp := ""
+		// If cycle, break it down to a chain.
 		if cycleMarker == newpath {
 			f, err := ioutil.TempFile(".", APPLICATION)
 			if err != nil {
 				log.Fatal(err)
 			}
-			newpath = f.Name()
-			tmp = newpath
+			tmp := f.Name()
 			f.Close()
 
-			delete(reverseOps, cycleMarker)
+			err = os.Rename(oldpath, tmp)
+			if err != nil {
+				log.Println(err)
+			} else {
+				log.Printf("Rename '%v' -> '%v'", oldpath, tmp)
+			}
+
+			// Plug temp file to the other end of the chain.
+			reverseOps[cycleMarker] = tmp
+
+			// During one loop over 'renameOps', we may process several operations in
+			// case of chains and cycles. Remove rename operation so that no other
+			// loop over 'renameOps' processes it again.
+			delete(renameOps, oldpath)
+			// Go backward.
+			newpath = oldpath
+			oldpath = reverseOps[oldpath]
 		}
 
 		// Process the chain of renames. Renaming can still fail, in which case we
@@ -533,43 +547,33 @@ func processRenames(root string, renameOps, reverseOps map[string]string, clobbe
 			if err != nil {
 				log.Println(err)
 			} else {
-				var err error
-				if clobber {
-					err = os.Rename(oldpath, newpath)
-					if err != nil {
-						log.Println(err)
+				// There is a race condition between the existance check and the rename.
+				// We could create a hard link to rename atomically without overwriting.
+				// But 1) we need to remove the original link afterward, so we lose
+				// atomicity, 2) hard links are not supported by all filesystems.
+				exists := false
+				if !clobber {
+					_, err = os.Stat(newpath)
+					if err == nil || os.IsExist(err) {
+						exists = true
 					}
-				} else {
-					err = os.Link(oldpath, newpath)
+				}
+				if clobber || !exists {
+					err := os.Rename(oldpath, newpath)
 					if err != nil {
 						log.Println(err)
 					} else {
-						err = os.Remove(oldpath)
-						if err != nil {
-							log.Println(err)
-						}
+						log.Printf("Rename '%v' -> '%v'", oldpath, newpath)
 					}
-				}
-				if err == nil {
-					log.Printf("Rename '%v' -> '%v'", oldpath, newpath)
+				} else {
+					log.Printf("Do not rename '%v' -> '%v': Destination exists", oldpath, newpath)
 				}
 			}
-			// Go backward.
+
 			delete(renameOps, oldpath)
 			newpath = oldpath
 			oldpath = reverseOps[oldpath]
 		}
-
-		// Restore the cycle if needs be.
-		if tmp != "" {
-			err = os.Rename(tmp, cycleMarker)
-			if err != nil {
-				log.Println(err)
-			} else {
-				log.Printf("Rename '%v' -> '%v'", tmp, cycleMarker)
-			}
-		}
-
 	}
 }
 
