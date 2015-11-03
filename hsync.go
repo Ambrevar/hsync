@@ -143,9 +143,9 @@ We always traverse chains until we reach the end, then rename the elements while
 going backward till the beginning. The beginning can be before the entry point.
 'reverseOps' is used for going backward.
 
-When a cycle is detected, we break it by renaming one file to a temporary name.
-Then we process everything as for a chain. Finally we rename the temporary file
-to its original newpath.
+When a cycle is detected, we break it down to a chain. We rename one file to a
+temporary name. Then we add this new file to the other end of the chain so that
+it gets renamed to its original new name once all files have been processed.
 */
 package main
 
