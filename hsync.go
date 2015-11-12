@@ -1,4 +1,4 @@
-// Copyright © 2015 Pierre Neidhardt <ambrevar at gmail dot com>
+// Copyright © 2015 Pierre Neidhardt <ambrevar@gmail.com>
 // Use of this file is governed by the license that can be found in LICENSE.
 
 /*
@@ -164,7 +164,7 @@ import (
 
 const (
 	APPLICATION = "hsync"
-	VERSION     = "1.1"
+	VERSION     = "1.2"
 	COPYRIGHT   = "Copyright (C) 2015 Pierre Neidhardt"
 	BLOCKSIZE   = 4096
 	SEPARATOR   = string(os.PathSeparator)
@@ -268,6 +268,12 @@ func visitSource(root string, entries map[partialHash]fileMatch) {
 			return nil
 		}
 
+		// Ignore empty files as they add a lot of unnecessary noise to the
+		// duplicate detection and output.
+		if info.Size() == 0 {
+			return nil
+		}
+
 		inputID, inputKey := newFileEntry(input, info.Size())
 		var err error
 
@@ -361,6 +367,10 @@ func visitTarget(root, sourceRoot string, entries map[partialHash]fileMatch) {
 
 	visitor := func(input string, info os.FileInfo, ignored error) error {
 		if !info.Mode().IsRegular() {
+			return nil
+		}
+
+		if info.Size() == 0 {
 			return nil
 		}
 
