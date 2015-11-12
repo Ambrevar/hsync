@@ -296,7 +296,7 @@ func visitSource(root string, entries map[partialHash]fileMatch) {
 		}
 
 		if ok && v.sourceID == nil {
-			log.Printf("Source duplicate: %v (%x)\n", inputID.path, inputKey.hash)
+			log.Printf("Source duplicate (%x) '%v'\n", inputKey.hash, inputID.path)
 			return nil
 		} else if !ok {
 			entries[inputKey] = fileMatch{sourceID: &inputID}
@@ -328,8 +328,8 @@ func visitSource(root string, entries map[partialHash]fileMatch) {
 
 		if inputKey == conflictKey && err == io.EOF {
 			entries[inputKey] = fileMatch{}
-			log.Printf("Source duplicate: %v (%x)\n", inputID.path, inputKey.hash)
-			log.Printf("Source duplicate: %v (%x)\n", conflictID.path, conflictKey.hash)
+			log.Printf("Source duplicate (%x) '%v'\n", inputKey.hash, inputID.path)
+			log.Printf("Source duplicate (%x) '%v'\n", conflictKey.hash, conflictID.path)
 		} else {
 			// Resolved conflict.
 			entries[inputKey] = fileMatch{sourceID: &inputID}
@@ -396,11 +396,11 @@ func visitTarget(root, sourceRoot string, entries map[partialHash]fileMatch) {
 		}
 
 		if ok && v.sourceID == nil {
-			log.Printf("Target duplicate match: %v (%x)\n", inputID.path, inputKey.hash)
+			log.Printf("Target duplicate match (%x) '%v'\n", inputKey.hash, inputID.path)
 			return nil
 		} else if ok && v.targetID != nil && v.targetID == &unsolvable {
 			// Unresolved conflict happened previously.
-			log.Printf("Target duplicate: %v (%x), source match: %v\n", inputID.path, inputKey.hash, v.sourceID.path)
+			log.Printf("Target duplicate (%x) '%v', source match '%v'\n", inputKey.hash, inputID.path, v.sourceID.path)
 			return nil
 		} else if !ok {
 			// No matching file in source.
@@ -459,8 +459,8 @@ func visitTarget(root, sourceRoot string, entries map[partialHash]fileMatch) {
 		}
 
 		if inputKey == sourceKey && inputKey == conflictKey && err == io.EOF {
-			log.Printf("Target duplicate: %v (%x), source match: %v\n", inputID.path, inputKey.hash, v.sourceID.path)
-			log.Printf("Target duplicate: %v (%x), source match: %v\n", conflictID.path, conflictKey.hash, v.sourceID.path)
+			log.Printf("Target duplicate (%x) '%v', source match '%v'\n", inputKey.hash, inputID.path, v.sourceID.path)
+			log.Printf("Target duplicate (%x) '%v', source match '%v'\n", conflictKey.hash, conflictID.path, v.sourceID.path)
 			// We mark the source file with an unresolved conflict for future target files.
 			entries[sourceKey] = fileMatch{sourceID: sourceID, targetID: &unsolvable}
 		} else if inputKey == sourceKey && inputKey != conflictKey {
@@ -566,7 +566,7 @@ func processRenames(root string, renameOps, reverseOps map[string]string, clobbe
 						log.Printf("Rename '%v' -> '%v'", oldpath, newpath)
 					}
 				} else {
-					log.Printf("Do not rename '%v' -> '%v': Destination exists", oldpath, newpath)
+					log.Printf("Destination exists, skip renaming: '%v' -> '%v'", oldpath, newpath)
 				}
 			}
 
