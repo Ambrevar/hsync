@@ -241,7 +241,8 @@ func rollingChecksum(fid *fileID, key *partialHash, file **os.File) (err error) 
 	if err != nil && err != io.EOF {
 		return
 	}
-	fid.h.Write(buf[:n])
+	// Failure means fatal memory error, no need to handle it.
+	_, _ = fid.h.Write(buf[:n])
 	key.pos++
 	key.hash = string(fid.h.Sum(nil))
 	return
@@ -261,6 +262,7 @@ func visitSource(root string, entries map[partialHash]fileMatch) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Chdir to oldroot can fail: if so, the error will be caught in the subsequent Chdir.
 	defer os.Chdir(oldroot)
 
 	visitor := func(input string, info os.FileInfo, ignored error) error {
@@ -350,7 +352,7 @@ func visitSource(root string, entries map[partialHash]fileMatch) {
 
 	// Since we do not stop on read errors while walking, the returned error is
 	// always nil.
-	filepath.Walk(".", visitor)
+	_ = filepath.Walk(".", visitor)
 }
 
 // See comments in visitSource.
@@ -435,11 +437,20 @@ func visitTarget(root, sourceRoot string, entries map[partialHash]fileMatch) {
 			// Since we change folders, we don't have to store the root in fileID, nor
 			// we have to compute sourceRoot's realpath to open the file from this
 			// point.
-			os.Chdir(oldroot)
-			os.Chdir(sourceRoot)
+			_ = os.Chdir(oldroot)
+			err = os.Chdir(sourceRoot)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			err = rollingChecksum(sourceID, &sourceKey, &sourceFile)
-			os.Chdir(oldroot)
-			os.Chdir(root)
+
+			_ = os.Chdir(oldroot)
+			err = os.Chdir(root)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			if err != nil && err != io.EOF {
 				// Read error. Drop all entries.
 				log.Println(err)
@@ -488,7 +499,7 @@ func visitTarget(root, sourceRoot string, entries map[partialHash]fileMatch) {
 		return nil
 	}
 
-	filepath.Walk(".", visitor)
+	_ = filepath.Walk(".", visitor)
 }
 
 // Rename files as specified in renameOps.
@@ -665,7 +676,8 @@ func main() {
 		log.Println(":: Previewing renames")
 		// There should be no error.
 		buf, _ := json.MarshalIndent(renameOps, "", "\t")
-		os.Stdout.Write(buf)
+		// Failure means fatal I/O error, no need to handle it.
+		_, _ = os.Stdout.Write(buf)
 		fmt.Println()
 	}
 }

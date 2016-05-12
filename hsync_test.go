@@ -59,10 +59,7 @@ func sameEntries(got, want map[partialHash]fileMatch) bool {
 			}
 		}
 	}
-	if count != len(want) {
-		return false
-	}
-	return true
+	return !(count != len(want))
 }
 
 /* Test cases for source:
