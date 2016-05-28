@@ -568,7 +568,7 @@ func processRenames(root string, renameOps, reverseOps map[string]string, clobbe
 			if err != nil {
 				log.Println(err)
 			} else {
-				// There is a race condition between the existance check and the rename.
+				// There is a race condition between the existence check and the rename.
 				// We could create a hard link to rename atomically without overwriting.
 				// But 1) we need to remove the original link afterward, so we lose
 				// atomicity, 2) hard links are not supported by all filesystems.
