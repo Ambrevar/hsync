@@ -15,6 +15,11 @@ Set up a Go environment (see <https://golang.org/doc/install>) and run:
 
 	$ go get bitbucket.org/ambrevar/hsync
 
+The version number is set at compilation time. To package a specific version,
+checkout the corresponding tag and set `version` from the build command, e.g.:
+
+	go build -ldflags "-X main.version=$(git describe --tags --always)"
+
 ## Usage
 
 See `hsync -h`.
