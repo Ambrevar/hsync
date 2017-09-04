@@ -11,7 +11,7 @@ The main goal of the program is to make folders synchronization faster by
 sparing big file transfers when a simple rename suffices. It complements other
 synchronization programs that lack this capability.
 
-See http://ambrevar.bitbucket.org/hsync and 'hsync -h' for more details.
+See http://ambrevar.bitbucket.io/hsync and 'hsync -h' for more details.
 
 Usage:
 
